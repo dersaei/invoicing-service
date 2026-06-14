@@ -1,0 +1,54 @@
+{
+  "invoice": {
+    "title_proforma": "Faktura proforma",
+    "number": "Numer faktury",
+    "issue_date": "Data wystawienia",
+    "due_date": "Termin płatności"
+  },
+  "parties": {
+    "seller": "Sprzedawca",
+    "buyer": "Nabywca",
+    "nip": "NIP",
+    "regon": "REGON",
+    "vat_eu": "VAT-EU",
+    "address": "Adres"
+  },
+  "items": {
+    "title": "Pozycje",
+    "no": "Lp.",
+    "name": "Nazwa usługi",
+    "qty": "Ilość",
+    "unit_price_net": "Cena netto",
+    "vat_rate": "Stawka VAT",
+    "amount_net": "Wartość netto",
+    "amount_vat": "Kwota VAT",
+    "amount_gross": "Wartość brutto"
+  },
+  "totals": {
+    "total_net": "Razem netto",
+    "total_vat": "VAT",
+    "total_gross": "Razem do zapłaty"
+  },
+  "payment": {
+    "title": "Płatność",
+    "bank": "Bank",
+    "iban": "IBAN",
+    "swift": "SWIFT",
+    "term_days": "{{days}} dni od daty wystawienia"
+  },
+  "vat_notes": {
+    "eu_reverse": "Odwrotne obciążenie — podatek VAT rozlicza nabywca (art. 196 Dyrektywy Rady 2006/112/WE).",
+    "export_zero": "Eksport usług poza terytorium Unii Europejskiej — VAT 0%."
+  },
+  "email": {
+    "subject_proforma": "Faktura proforma {{number}}",
+    "greeting": "Dzień dobry,",
+    "body": "w załączeniu przesyłamy fakturę proforma {{number}}. Termin płatności wynosi {{days}} dni od daty wystawienia.",
+    "thanks": "Z poważaniem,",
+    "signature": "Zespół Spiżarni Regio"
+  },
+  "footer": {
+    "generated_at": "Wygenerowano automatycznie {{datetime}}",
+    "page": "Strona {{current}} z {{total}}"
+  }
+}

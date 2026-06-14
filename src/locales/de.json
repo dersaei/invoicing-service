@@ -1,0 +1,54 @@
+{
+  "invoice": {
+    "title_proforma": "Proforma-Rechnung",
+    "number": "Rechnungsnummer",
+    "issue_date": "Rechnungsdatum",
+    "due_date": "Fälligkeit"
+  },
+  "parties": {
+    "seller": "Verkäufer",
+    "buyer": "Käufer",
+    "nip": "Steuernummer",
+    "regon": "REGON",
+    "vat_eu": "USt-IdNr.",
+    "address": "Adresse"
+  },
+  "items": {
+    "title": "Positionen",
+    "no": "Pos.",
+    "name": "Bezeichnung",
+    "qty": "Menge",
+    "unit_price_net": "Einzelpreis netto",
+    "vat_rate": "MwSt.-Satz",
+    "amount_net": "Nettobetrag",
+    "amount_vat": "MwSt.",
+    "amount_gross": "Bruttobetrag"
+  },
+  "totals": {
+    "total_net": "Summe netto",
+    "total_vat": "MwSt.",
+    "total_gross": "Gesamtbetrag"
+  },
+  "payment": {
+    "title": "Zahlungsmodalitäten",
+    "bank": "Bank",
+    "iban": "IBAN",
+    "swift": "SWIFT/BIC",
+    "term_days": "{{days}} Tage ab Rechnungsdatum"
+  },
+  "vat_notes": {
+    "eu_reverse": "Steuerschuldnerschaft des Leistungsempfängers — Umsatzsteuer wird vom Empfänger geschuldet (Art. 196 der Richtlinie 2006/112/EG).",
+    "export_zero": "Ausfuhr von Dienstleistungen außerhalb der Europäischen Union — USt. 0%."
+  },
+  "email": {
+    "subject_proforma": "Proforma-Rechnung {{number}}",
+    "greeting": "Sehr geehrte Damen und Herren,",
+    "body": "anbei senden wir Ihnen die Proforma-Rechnung {{number}}. Die Zahlungsfrist beträgt {{days}} Tage ab Rechnungsdatum.",
+    "thanks": "Mit freundlichen Grüßen,",
+    "signature": "Ihr Spiżarnia Regio Team"
+  },
+  "footer": {
+    "generated_at": "Automatisch erzeugt am {{datetime}}",
+    "page": "Seite {{current}} von {{total}}"
+  }
+}

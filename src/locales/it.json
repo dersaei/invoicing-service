@@ -1,0 +1,54 @@
+{
+  "invoice": {
+    "title_proforma": "Fattura pro forma",
+    "number": "Numero fattura",
+    "issue_date": "Data di emissione",
+    "due_date": "Scadenza"
+  },
+  "parties": {
+    "seller": "Venditore",
+    "buyer": "Acquirente",
+    "nip": "NIP",
+    "regon": "REGON",
+    "vat_eu": "Partita IVA intracomunitaria",
+    "address": "Indirizzo"
+  },
+  "items": {
+    "title": "Descrizione",
+    "no": "N°",
+    "name": "Descrizione",
+    "qty": "Quantità",
+    "unit_price_net": "Prezzo unitario netto",
+    "vat_rate": "Aliquota IVA",
+    "amount_net": "Imponibile",
+    "amount_vat": "IVA",
+    "amount_gross": "Totale"
+  },
+  "totals": {
+    "total_net": "Totale imponibile",
+    "total_vat": "IVA",
+    "total_gross": "Totale fattura"
+  },
+  "payment": {
+    "title": "Modalità di pagamento",
+    "bank": "Banca",
+    "iban": "IBAN",
+    "swift": "SWIFT/BIC",
+    "term_days": "{{days}} giorni dalla data di emissione"
+  },
+  "vat_notes": {
+    "eu_reverse": "Inversione contabile — IVA assolta dal destinatario (art. 196 Direttiva 2006/112/CE).",
+    "export_zero": "Esportazione di servizi al di fuori dell'Unione Europea — IVA 0%."
+  },
+  "email": {
+    "subject_proforma": "Fattura pro forma {{number}}",
+    "greeting": "Buongiorno,",
+    "body": "in allegato la fattura pro forma {{number}}. Il termine di pagamento è di {{days}} giorni dalla data di emissione.",
+    "thanks": "Cordiali saluti,",
+    "signature": "Il team di Spiżarnia Regio"
+  },
+  "footer": {
+    "generated_at": "Generato automaticamente il {{datetime}}",
+    "page": "Pagina {{current}} di {{total}}"
+  }
+}

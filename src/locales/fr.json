@@ -1,0 +1,54 @@
+{
+  "invoice": {
+    "title_proforma": "Facture pro forma",
+    "number": "Numéro de facture",
+    "issue_date": "Date d'émission",
+    "due_date": "Échéance"
+  },
+  "parties": {
+    "seller": "Vendeur",
+    "buyer": "Acheteur",
+    "nip": "NIP",
+    "regon": "REGON",
+    "vat_eu": "TVA intracommunautaire",
+    "address": "Adresse"
+  },
+  "items": {
+    "title": "Désignation",
+    "no": "N°",
+    "name": "Désignation",
+    "qty": "Quantité",
+    "unit_price_net": "Prix unitaire HT",
+    "vat_rate": "Taux TVA",
+    "amount_net": "Montant HT",
+    "amount_vat": "TVA",
+    "amount_gross": "Montant TTC"
+  },
+  "totals": {
+    "total_net": "Total HT",
+    "total_vat": "TVA",
+    "total_gross": "Total TTC"
+  },
+  "payment": {
+    "title": "Modalités de paiement",
+    "bank": "Banque",
+    "iban": "IBAN",
+    "swift": "SWIFT/BIC",
+    "term_days": "{{days}} jours à compter de la date d'émission"
+  },
+  "vat_notes": {
+    "eu_reverse": "Autoliquidation — TVA due par le preneur (article 196 de la directive 2006/112/CE).",
+    "export_zero": "Exportation de services hors de l'Union européenne — TVA 0%."
+  },
+  "email": {
+    "subject_proforma": "Facture pro forma {{number}}",
+    "greeting": "Bonjour,",
+    "body": "veuillez trouver ci-joint la facture pro forma {{number}}. Le délai de paiement est de {{days}} jours à compter de la date d'émission.",
+    "thanks": "Cordialement,",
+    "signature": "L'équipe Spiżarnia Regio"
+  },
+  "footer": {
+    "generated_at": "Généré automatiquement le {{datetime}}",
+    "page": "Page {{current}} sur {{total}}"
+  }
+}

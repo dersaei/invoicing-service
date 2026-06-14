@@ -1,0 +1,54 @@
+{
+  "invoice": {
+    "title_proforma": "Pro forma invoice",
+    "number": "Invoice number",
+    "issue_date": "Issue date",
+    "due_date": "Due date"
+  },
+  "parties": {
+    "seller": "Seller",
+    "buyer": "Buyer",
+    "nip": "Tax ID",
+    "regon": "REGON",
+    "vat_eu": "EU VAT ID",
+    "address": "Address"
+  },
+  "items": {
+    "title": "Items",
+    "no": "No.",
+    "name": "Description",
+    "qty": "Qty",
+    "unit_price_net": "Unit price (net)",
+    "vat_rate": "VAT rate",
+    "amount_net": "Net amount",
+    "amount_vat": "VAT amount",
+    "amount_gross": "Gross amount"
+  },
+  "totals": {
+    "total_net": "Total net",
+    "total_vat": "VAT",
+    "total_gross": "Total due"
+  },
+  "payment": {
+    "title": "Payment details",
+    "bank": "Bank",
+    "iban": "IBAN",
+    "swift": "SWIFT/BIC",
+    "term_days": "{{days}} days from the issue date"
+  },
+  "vat_notes": {
+    "eu_reverse": "Reverse charge — VAT to be accounted for by the recipient (Article 196, Council Directive 2006/112/EC).",
+    "export_zero": "Export of services outside the European Union — VAT 0%."
+  },
+  "email": {
+    "subject_proforma": "Pro forma invoice {{number}}",
+    "greeting": "Hello,",
+    "body": "please find attached the pro forma invoice {{number}}. The payment term is {{days}} days from the issue date.",
+    "thanks": "Kind regards,",
+    "signature": "The Spiżarnia Regio team"
+  },
+  "footer": {
+    "generated_at": "Automatically generated on {{datetime}}",
+    "page": "Page {{current}} of {{total}}"
+  }
+}

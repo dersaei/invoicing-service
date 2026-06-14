@@ -1,0 +1,29 @@
+# ── Secrets (managed by Doppler; never commit) ───────────────
+.env
+.env.*
+!.env.example
+
+# ── Dependencies ─────────────────────────────────────────────
+node_modules/
+.pnpm-store/
+
+# ── Build output ─────────────────────────────────────────────
+dist/
+*.tsbuildinfo
+
+# ── Logs ─────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# ── Playwright ───────────────────────────────────────────────
+# Browser binaries are installed at build time, not committed.
+/playwright-report/
+/test-results/
+
+# ── OS / editor cruft ────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp

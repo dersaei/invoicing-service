@@ -1,0 +1,32 @@
+{
+  "name": "invoicing-service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Proforma invoice generator for Spiżarnia Regio — Directus webhook → PDF → Fastmail",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "migrate": "node --import tsx scripts/migrate.ts"
+  },
+  "dependencies": {
+    "@directus/sdk": "^19.0.0",
+    "fastify": "^5.2.0",
+    "i18next": "^24.2.0",
+    "nodemailer": "^6.9.16",
+    "playwright": "^1.49.0",
+    "postgres": "^3.4.5",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/nodemailer": "^6.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

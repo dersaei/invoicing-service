@@ -6,7 +6,7 @@
  * Lifecycle:
  *   start  → validate env (config.ts) → connect pool (db.ts) → listen
  *   stop   → SIGTERM/SIGINT → stop accepting requests → drain in-flight
- *            → close DB pool → exit(0)
+ *            → close DB pool + Chromium → exit(0)
  *
  * If shutdown stalls (e.g. a query hangs), a hard timeout kicks in
  * and exits with code 1. This is important for Docker, which will
@@ -16,6 +16,7 @@
 import Fastify from "fastify";
 import { config } from "./config.js";
 import { closeDb } from "./db.js";
+import { closePdfBrowser } from "./lib/pdf.js";
 import { healthRoute } from "./routes/health.js";
 
 // Hard limit on graceful shutdown: if we can't exit cleanly in this
@@ -78,7 +79,9 @@ async function main() {
     try {
       // 1. Stop accepting new connections, wait for in-flight to drain.
       await fastify.close();
-      // 2. Drain the DB pool.
+      // 2. Close Chromium first (it's the slowest to die).
+      await closePdfBrowser();
+      // 3. Drain the DB pool last.
       await closeDb();
       fastify.log.info("shutdown complete");
       process.exit(0);

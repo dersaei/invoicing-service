@@ -33,7 +33,7 @@
     "title": "Modalità di pagamento",
     "bank": "Banca",
     "iban": "IBAN",
-    "swift": "SWIFT/BIC",
+    "bic": "SWIFT/BIC",
     "term_days": "{{days}} giorni dalla data di emissione"
   },
   "vat_notes": {

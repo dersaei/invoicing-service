@@ -73,19 +73,19 @@ const env = parsed.data;
 // These are NOT secrets and don't belong in Doppler; they're static
 // business facts. Hard-coded here intentionally. Replace placeholders.
 const SELLER = {
-  legal_name: "TODO_SELLER_LEGAL_NAME",
-  regon: "TODO_REGON",
-  nip: "TODO_NIP",
+  legal_name: "Bogusław Siemiątkowski Spiżarnia Regio",
+  regon: "365663516",
+  nip: "PL5691729538",
   address: {
-    street: "TODO_STREET",
-    city: "TODO_CITY",
-    postal_code: "TODO_POSTAL",
+    street: "Napoleońska 49",
+    city: "Mława",
+    postal_code: "06-500",
     country: "PL",
   },
   bank: {
-    name: "TODO_BANK_NAME",
-    iban_eur: "TODO_IBAN_EUR",
-    swift: "TODO_SWIFT",
+    name: "Boguslaw Krzysztof Siemiatkowski",
+    iban_eur: "DE60100110012622118739",
+    bic: "NTSBDEB1XXX",
   },
 } as const;
 

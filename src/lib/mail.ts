@@ -46,6 +46,26 @@ function getTransporter(): Transporter {
   return transporter;
 }
 
+/**
+ * Verify the SMTP connection + credentials without sending a message.
+ * Called once at startup so a bad login (wrong user, expired app
+ * password) surfaces immediately in the boot logs instead of silently
+ * waiting until the first invoice fails to send.
+ *
+ * Returns true on success, false on failure — never throws. The caller
+ * decides whether a failure is fatal; here we treat mail as a degradable
+ * step (a failed send yields a 'partial' invoice, not a lost one), so we
+ * only want to warn loudly, not block the whole service from starting.
+ */
+export async function verifyMailer(): Promise<boolean> {
+  try {
+    await getTransporter().verify();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export interface SendInvoiceEmailOpts {
   /** Buyer's email address. */
   to: string;

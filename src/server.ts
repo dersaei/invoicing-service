@@ -16,7 +16,7 @@
 import Fastify from "fastify";
 import { config } from "./config.js";
 import { closeDb } from "./db.js";
-import { closeMailer } from "./lib/mail.js";
+import { closeMailer, verifyMailer } from "./lib/mail.js";
 import { closePdfBrowser } from "./lib/pdf.js";
 import { healthRoute } from "./routes/health.js";
 import { webhookRoute } from "./routes/webhook.js";
@@ -45,6 +45,24 @@ async function main() {
   } catch (err) {
     fastify.log.error(err, "failed to start");
     process.exit(1);
+  }
+
+  // ── SMTP preflight ───────────────────────────────────────
+  // Non-fatal: a bad login shouldn't block PDF upload / DB writes,
+  // but we want it screaming in the boot logs, not discovered on the
+  // first invoice. Email failures still degrade gracefully to 'partial'.
+  if (await verifyMailer()) {
+    fastify.log.info(
+      { host: config.mail.host, port: config.mail.port, user: config.mail.user },
+      "SMTP connection verified",
+    );
+  } else {
+    fastify.log.error(
+      { host: config.mail.host, port: config.mail.port, user: config.mail.user },
+      "SMTP verification FAILED — emails will not send until fixed " +
+        "(check FASTMAIL_SMTP_USER must be the main account login, and " +
+        "FASTMAIL_APP_PASSWORD must be a valid app password)",
+    );
   }
 
   // ── Graceful shutdown ────────────────────────────────────

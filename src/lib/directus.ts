@@ -3,7 +3,6 @@ import {
   readItems,
   rest,
   staticToken,
-  uploadFiles,
 } from "@directus/sdk";
 import { config } from "../config.js";
 import type { ServiceRecord } from "../types.js";
@@ -50,23 +49,56 @@ export async function uploadInvoicePdf(
   filename: string,
 ): Promise<UploadedFile> {
   const form = new FormData();
-  // Buffer.from kopiuje do nowego buffera z gwarantowanym ArrayBuffer
-  // storage (nie SharedArrayBuffer), co rozwiązuje strict-mode TS error
-  // o BlobPart bez wymagania DOM lib w tsconfig.
   form.append(
     "file",
-    new Blob([Buffer.from(buffer)], { type: "application/pdf" }),
+    new Blob([buffer], { type: "application/pdf" }),
     filename,
   );
-  const result = (await client.request(uploadFiles(form))) as {
-    id: string;
-    filename_download?: string;
-    filesize?: number | string | null;
+
+  // Omijamy @directus/sdk dla uploadu: surowy fetch daje pełną kontrolę
+  // nad multipart-payload i czytelne błędy. SDK potrafi zwrócić `null`
+  // przy nieoczekiwanym shape odpowiedzi, co maskuje prawdziwą przyczynę.
+  const base = config.directus.url.replace(/\/+$/, "");
+  const res = await fetch(`${base}/files`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${config.directus.token}` },
+    body: form,
+  });
+
+  const text = await res.text();
+
+  if (!res.ok) {
+    throw new Error(
+      `Directus file upload failed: HTTP ${res.status} — ${text.slice(0, 500)}`,
+    );
+  }
+
+  let parsed: {
+    data?: {
+      id?: string;
+      filename_download?: string;
+      filesize?: number | string | null;
+    };
   };
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    throw new Error(
+      `Directus file upload returned non-JSON: ${text.slice(0, 200)}`,
+    );
+  }
+
+  const data = parsed?.data;
+  if (!data?.id) {
+    throw new Error(
+      `Directus file upload returned unexpected shape: ${text.slice(0, 200)}`,
+    );
+  }
+
   return {
-    id: result.id,
-    filename: result.filename_download ?? filename,
-    size: normaliseSize(result.filesize),
+    id: data.id,
+    filename: data.filename_download ?? filename,
+    size: normaliseSize(data.filesize),
   };
 }
 

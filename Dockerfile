@@ -10,6 +10,15 @@
 # stage; nothing from this layer ends up in the final image.
 FROM node:22-bookworm-slim AS builder
 
+# Force a UTF-8 locale for the build. The slim image ships with the
+# POSIX/C locale, under which tsc can mis-decode non-ASCII literals in
+# source files (e.g. the Polish seller name/address in config.ts),
+# emitting corrupted bytes into dist/. i18n JSON files are unaffected
+# because they're parsed as UTF-8 at runtime, not compiled — which is
+# exactly why only the config.ts literals broke. C.UTF-8 is built into
+# glibc, so no locales package needed.
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+
 WORKDIR /build
 
 # Enable pnpm via corepack — Node ≥16.13 ships with this, no

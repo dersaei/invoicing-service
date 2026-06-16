@@ -54,6 +54,20 @@ export async function generateInvoicePdf(html: string): Promise<Uint8Array> {
   const page = await browser.newPage();
   try {
     await page.setContent(html, { waitUntil: "networkidle" });
+    // Fonts are inlined as base64 @font-face (no network request), so
+    // `networkidle` doesn't account for them. Wait for the font engine to
+    // finish parsing/applying them before snapshotting, otherwise the first
+    // render can fall back to a system font for some glyphs.
+    // `document` lives in the browser context, not Node — we don't pull in
+    // the DOM lib for the whole project just for this one call, so reference
+    // it through a locally-typed global instead.
+    await page.evaluate(() =>
+      (
+        globalThis as unknown as {
+          document: { fonts: { ready: Promise<unknown> } };
+        }
+      ).document.fonts.ready,
+    );
     return await page.pdf({
       format: "A4",
       printBackground: true,

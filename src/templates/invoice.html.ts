@@ -19,6 +19,7 @@
  */
 
 import { config } from "../config.js";
+import { FONT_FACE_CSS } from "../lib/fonts.js";
 import {
   formatCurrency,
   formatDate,
@@ -92,7 +93,7 @@ export function renderInvoiceHtml(data: InvoiceRenderData): string {
 <head>
 <meta charset="UTF-8">
 <title>${esc(t("invoice.title_proforma"))} ${esc(data.number)}</title>
-<style>${CSS}</style>
+<style>${FONT_FACE_CSS}${CSS}</style>
 </head>
 <body>
 

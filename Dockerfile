@@ -8,7 +8,7 @@
 # Slim Node 22 base — just enough to install deps and run tsc.
 # Build artifacts (node_modules, dist) get copied to the runtime
 # stage; nothing from this layer ends up in the final image.
-FROM node:22-bookworm-slim AS builder
+FROM node:24-bookworm-slim AS builder
 
 # Force a UTF-8 locale for the build. The slim image ships with the
 # POSIX/C locale, under which tsc can mis-decode non-ASCII literals in
@@ -51,7 +51,7 @@ RUN pnpm build
 # Bump this tag in lockstep with the `playwright` version in
 # package.json. Mismatched browser/Node versions cause weird
 # "Target closed" errors that are very hard to diagnose.
-FROM mcr.microsoft.com/playwright:v1.60.0-noble AS runtime
+FROM mcr.microsoft.com/playwright:v1.61.1-noble AS runtime
 
 USER pwuser
 WORKDIR /home/pwuser/app

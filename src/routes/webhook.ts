@@ -305,6 +305,7 @@ export const webhookRoute: FastifyPluginAsync = async (fastify) => {
       try {
         const mailResult = await sendInvoiceEmail({
           to: payload.buyer.email,
+          invoiceNumber: invoiceNumber.number,
           subject: rendered.subject,
           html: rendered.html,
           text: rendered.text,

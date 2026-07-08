@@ -18,10 +18,58 @@
  * silently because that risks double-sending.
  */
 
+import { format } from "node:util";
 import nodemailer, { type Transporter } from "nodemailer";
 import { config } from "../config.js";
 
 let transporter: Transporter | null = null;
+
+// pino-compatible numeric levels, so we can respect config.logLevel and
+// avoid spamming production with per-command SMTP trace output.
+const LOG_LEVELS = {
+  trace: 10,
+  debug: 20,
+  info: 30,
+  warn: 40,
+  error: 50,
+  fatal: 60,
+} as const;
+type LevelName = keyof typeof LOG_LEVELS;
+
+/**
+ * Nodemailer-compatible logger. Enabled together with `transactionLog: true`
+ * on the transport, it emits the raw SMTP command/response exchange (but NOT
+ * the message body) so a Fastmail rejection can be diagnosed from the logs.
+ *
+ * We forward into the same JSON stdout stream the rest of the service uses
+ * (Fastify/pino), so these lines sit alongside the app logs — rather than
+ * nodemailer's default raw console output. Each line carries a `component`
+ * field: nodemailer supplies its own ("smtp-connection", "smtp-pool", …),
+ * and we fall back to "smtp" if it doesn't — so everything greps by "smtp".
+ * Lines below config.logLevel are dropped.
+ */
+function makeSmtpLogger() {
+  const threshold = LOG_LEVELS[config.logLevel];
+  const emit =
+    (level: LevelName) =>
+    (entry: unknown, message?: unknown, ...args: unknown[]): void => {
+      if (LOG_LEVELS[level] < threshold) return;
+      const msg = typeof message === "string" ? format(message, ...args) : undefined;
+      const data = entry && typeof entry === "object" ? entry : {};
+      const line = JSON.stringify({ level, component: "smtp", msg, ...data });
+      if (level === "error" || level === "fatal") console.error(line);
+      else console.log(line);
+    };
+  return {
+    level() {},
+    trace: emit("trace"),
+    debug: emit("debug"),
+    info: emit("info"),
+    warn: emit("warn"),
+    error: emit("error"),
+    fatal: emit("fatal"),
+  };
+}
 
 function getTransporter(): Transporter {
   if (transporter === null) {
@@ -41,6 +89,11 @@ function getTransporter(): Transporter {
       pool: true,
       maxConnections: 3,
       maxMessages: 100, // recycle each connection after 100 messages
+      // Log the SMTP command/response exchange (no message body) into our
+      // JSON log stream. transactionLog only produces output when a logger
+      // is also set — hence both. Low volume here, so safe for production.
+      logger: makeSmtpLogger(),
+      transactionLog: true,
     });
   }
   return transporter;
@@ -69,6 +122,10 @@ export async function verifyMailer(): Promise<boolean> {
 export interface SendInvoiceEmailOpts {
   /** Buyer's email address. */
   to: string;
+  /** Invoice number, e.g. "FR001VG_2026". Emitted as an X-Invoice-Number
+   * header so the message can be correlated to an invoice in the mail
+   * provider's logs / raw source, independently of the Message-Id. */
+  invoiceNumber: string;
   /** Localised subject from renderInvoiceEmail. */
   subject: string;
   /** HTML body. */
@@ -111,6 +168,10 @@ export async function sendInvoiceEmail(
     subject: opts.subject,
     html: opts.html,
     text: opts.text,
+    // Custom tracking header. Nodemailer normalises the key casing and
+    // leaves protected headers (From/To/Subject/…) to the dedicated
+    // message fields above, so this is safe.
+    headers: { "X-Invoice-Number": opts.invoiceNumber },
     attachments: [
       {
         filename: opts.pdfFilename,

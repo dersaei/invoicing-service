@@ -169,8 +169,11 @@ export const webhookRoute: FastifyPluginAsync = async (fastify) => {
         price_net_eur: service.price_net_eur,
       });
 
-      const netAmount = Number(service.price_net_eur);
-      if (!Number.isFinite(netAmount) || netAmount < 0) {
+      // Catalog price is the VAT-INCLUSIVE final price the customer pays
+      // (same flat amount for every buyer). computeVat extracts net + VAT
+      // out of it for standard-rate buyers; 0% regimes keep net === gross.
+      const price = Number(service.price_net_eur);
+      if (!Number.isFinite(price) || price < 0) {
         throw new Error(
           `Catalog has invalid price_net_eur for ${service.code}: ${service.price_net_eur}`,
         );
@@ -192,7 +195,7 @@ export const webhookRoute: FastifyPluginAsync = async (fastify) => {
       // computeVat throws ViesValidationError if VAT-EU was provided
       // but VIES couldn't confirm it (rejected or unreachable).
       const vatComp = computeVat({
-        net: netAmount,
+        price,
         buyerCountry,
         vies: viesResult,
       });
@@ -245,7 +248,9 @@ export const webhookRoute: FastifyPluginAsync = async (fastify) => {
             name: localisedName,
             description: localisedDesc,
             quantity: 1,
-            unitPriceNet: netAmount,
+            // Derived net (price with VAT extracted), so the line total
+            // reconciles with the net/VAT/gross totals below.
+            unitPriceNet: localisedVat.net,
           },
         ],
         vat: localisedVat,

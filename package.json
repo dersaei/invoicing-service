@@ -12,12 +12,13 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --import tsx --test \"test/**/*.test.ts\"",
     "migrate": "node --import tsx scripts/migrate.ts"
   },
   "dependencies": {
     "@directus/sdk": "^21.3.0",
     "fastify": "^5.10.0",
-    "i18next": "^26.3.4",
+    "i18next": "^26.3.5",
     "nodemailer": "^9.0.3",
     "playwright": "^1.61.1",
     "postgres": "^3.4.5",

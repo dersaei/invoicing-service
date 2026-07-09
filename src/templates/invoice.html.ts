@@ -62,6 +62,17 @@ export function renderInvoiceHtml(data: InvoiceRenderData): string {
   const lang = data.language;
   const seller = config.seller;
 
+  // Reverse charge (intra-EU) and export are NOT a 0% rate — the supply
+  // is outside Polish VAT and the buyer accounts the tax. Show a neutral
+  // marker in the rate column instead of "0%"; the legal wording is
+  // carried by the VAT note below. (art. 106e ust. 5 pkt 1 / pkt 18.)
+  const isTaxed = data.vat.regime === "pl_standard";
+  const rateDisplay = isTaxed ? `${data.vat.rate}%` : "—";
+  // On an intra-EU reverse-charge invoice the seller's own VAT-EU number
+  // is what makes the reverse charge valid; label it as such, not "NIP".
+  const sellerTaxLabel =
+    data.vat.regime === "eu_reverse" ? t("parties.vat_eu") : t("parties.nip");
+
   const itemsHtml = data.items
     .map((item, i) => {
       const lineNet = item.quantity * item.unitPriceNet;
@@ -74,7 +85,7 @@ export function renderInvoiceHtml(data: InvoiceRenderData): string {
           <td>${esc(item.name)}${descLine}</td>
           <td class="num">${item.quantity}</td>
           <td class="num">${esc(formatCurrency(item.unitPriceNet, lang))}</td>
-          <td class="num">${data.vat.rate}%</td>
+          <td class="num">${esc(rateDisplay)}</td>
           <td class="num">${esc(formatCurrency(lineNet, lang))}</td>
         </tr>`;
     })
@@ -121,7 +132,7 @@ export function renderInvoiceHtml(data: InvoiceRenderData): string {
       ${esc(seller.address.country)}
     </div>
     <div class="ids">
-      <div class="id-line">${esc(t("parties.nip"))}: ${esc(seller.nip)}</div>
+      <div class="id-line">${esc(sellerTaxLabel)}: ${esc(seller.nip)}</div>
       <div class="id-line">${esc(t("parties.regon"))}: ${esc(seller.regon)}</div>
     </div>
   </div>
@@ -158,7 +169,7 @@ export function renderInvoiceHtml(data: InvoiceRenderData): string {
       <td class="value">${esc(formatCurrency(data.vat.net, lang))}</td>
     </tr>
     <tr>
-      <td class="label">${esc(t("totals.total_vat"))} (${data.vat.rate}%)</td>
+      <td class="label">${esc(t("totals.total_vat"))} (${esc(rateDisplay)})</td>
       <td class="value">${esc(formatCurrency(data.vat.vat, lang))}</td>
     </tr>
     <tr class="total">

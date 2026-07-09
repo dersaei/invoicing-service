@@ -23,34 +23,15 @@
 import { sql } from "../db.js";
 import { config } from "../config.js";
 import type { ViesResult } from "../types.js";
+import { parseVatId, type ParsedVatId } from "./vat-id.js";
+
+// parseVatId lives in the dependency-free vat-id.js so it can be unit
+// tested without booting config/DB. Re-exported here for callers that
+// still import it from this module.
+export { parseVatId, type ParsedVatId };
 
 const VIES_NS = "urn:ec.europa.eu:taxud:vies:services:checkVat:types";
 const CACHE_TTL = "24 hours";
-
-export interface ParsedVatId {
-  /** Country code in VIES form (EL for Greece). */
-  countryCode: string;
-  /** Alphanumeric part after the 2-letter prefix. */
-  vatNumber: string;
-}
-
-/**
- * Parse a raw VAT-EU identifier (e.g. "FR 123 456 78901", "fr-12345")
- * into VIES-compatible parts. Strips spaces and dashes, uppercases,
- * splits the 2-letter prefix from the rest, maps GR → EL for Greece.
- *
- * Throws if the input doesn't match the expected shape.
- */
-export function parseVatId(raw: string): ParsedVatId {
-  const cleaned = raw.toUpperCase().replace(/[\s\-]/g, "");
-  const m = /^([A-Z]{2})([A-Z0-9]+)$/.exec(cleaned);
-  if (!m) {
-    throw new Error(`malformed VAT-EU identifier: ${JSON.stringify(raw)}`);
-  }
-  const iso = m[1]!;
-  const viesCountry = iso === "GR" ? "EL" : iso;
-  return { countryCode: viesCountry, vatNumber: m[2]! };
-}
 
 /**
  * Verify a VAT-EU number against VIES, caching definitive results.

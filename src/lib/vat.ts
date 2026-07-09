@@ -1,9 +1,18 @@
 /**
  * src/lib/vat.ts — VAT regime resolution and amount calculation.
  *
- * Pure logic. Given (net amount, buyer country, VIES result) returns
- * the VAT regime to apply, the rate, the calculated amounts, and the
- * legal note that must appear on the invoice.
+ * Pure logic. Given (price, buyer country, VIES result) returns the
+ * VAT regime to apply, the rate, the calculated amounts, and the legal
+ * note that must appear on the invoice.
+ *
+ * PRICING MODEL — VAT-INCLUSIVE (gross-target). The `price` passed in
+ * is the final amount the customer pays, identical for every buyer
+ * (a flat sticker price). VAT is extracted *out of* that price for
+ * standard-rate buyers, not added on top:
+ *   - standard rate 23% → net = price / 1.23, vat = price − net
+ *   - 0% regimes        → net = gross = price, vat = 0
+ * So a reverse-charge buyer and a domestic buyer both pay `price`;
+ * only the split between net and VAT differs.
  *
  * VAT regimes (per README):
  *   ┌───────────────────────────┬────────┬──────────────────────────┐
@@ -79,8 +88,13 @@ export class ViesValidationError extends Error {
 }
 
 export interface ComputeVatOpts {
-  /** Net amount in EUR. Must be a non-negative finite number. */
-  net: number;
+  /**
+   * Final price in EUR the customer pays — VAT-INCLUSIVE (gross target).
+   * The same flat value for every buyer; for standard-rate buyers the
+   * net and VAT are derived by extracting VAT out of this amount.
+   * Must be a non-negative finite number.
+   */
+  price: number;
   /** Buyer's ISO 3166-1 alpha-2 country code, uppercase. */
   buyerCountry: string;
   /**
@@ -103,20 +117,20 @@ export interface ComputeVatOpts {
  * provided a VAT-EU number, and VIES did not confirm it valid.
  */
 export function computeVat(opts: ComputeVatOpts): VatComputation {
-  const { net, buyerCountry, vies } = opts;
+  const { price, buyerCountry, vies } = opts;
 
   if (!/^[A-Z]{2}$/.test(buyerCountry)) {
     throw new Error(
       `buyerCountry must be 2 uppercase ISO letters, got: ${JSON.stringify(buyerCountry)}`,
     );
   }
-  if (!Number.isFinite(net) || net < 0) {
-    throw new Error(`net must be a non-negative finite number, got: ${net}`);
+  if (!Number.isFinite(price) || price < 0) {
+    throw new Error(`price must be a non-negative finite number, got: ${price}`);
   }
 
   // ── Branch 1: domestic PL → always 23%, no annotation ────
   if (buyerCountry === SELLER_COUNTRY) {
-    return buildResult({ regime: "pl_standard", rate: 23, net, note: null });
+    return buildResult({ regime: "pl_standard", rate: 23, price, note: null });
   }
 
   const isEu = EU_COUNTRIES.has(buyerCountry);
@@ -127,7 +141,7 @@ export function computeVat(opts: ComputeVatOpts): VatComputation {
       return buildResult({
         regime: "eu_reverse",
         rate: 0,
-        net,
+        price,
         note:
           "Reverse charge — VAT to be accounted for by the recipient " +
           "(Article 196, Council Directive 2006/112/EC).",
@@ -146,14 +160,14 @@ export function computeVat(opts: ComputeVatOpts): VatComputation {
   // Per README: French companies without TVA intracommunautaire are
   // treated as consumers at 23% PL VAT. Same logic for any EU country.
   if (isEu) {
-    return buildResult({ regime: "pl_standard", rate: 23, net, note: null });
+    return buildResult({ regime: "pl_standard", rate: 23, price, note: null });
   }
 
   // ── Branch 4: outside EU → export, 0% with annotation ────
   return buildResult({
     regime: "export_zero",
     rate: 0,
-    net,
+    price,
     note: "Export of services outside the European Union — VAT 0%.",
   });
 }
@@ -168,12 +182,16 @@ export function isEuCountry(iso2: string): boolean {
 function buildResult(p: {
   regime: VatRegime;
   rate: number;
-  net: number;
+  /** VAT-inclusive final price; net and VAT are extracted out of it. */
+  price: number;
   note: string | null;
 }): VatComputation {
-  const net = round2(p.net);
-  const vat = round2((net * p.rate) / 100);
-  const gross = round2(net + vat);
+  const gross = round2(p.price);
+  // Extract VAT out of the gross price. For rate 0 this yields net === gross
+  // and vat === 0. Computing vat as (gross − net) guarantees the three
+  // figures always reconcile exactly (net + vat === gross), with no drift.
+  const net = round2(gross / (1 + p.rate / 100));
+  const vat = round2(gross - net);
   return { regime: p.regime, rate: p.rate, net, vat, gross, note: p.note };
 }
 

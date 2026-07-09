@@ -12,3 +12,11 @@
  * subscriptions. Printed on the invoice and referenced in the email body.
  */
 export const PAYMENT_TERM_DAYS = 30;
+
+/**
+ * Polish standard VAT rate (%). Applied to domestic (PL) buyers and to
+ * EU consumers without a valid VAT-EU number. Lives here — a pure module
+ * with no env dependency — so `lib/vat.ts` stays unit-testable without
+ * booting config, while still having a single source of truth.
+ */
+export const PL_STANDARD_VAT_RATE = 23;

@@ -37,6 +37,7 @@
  * persisting it in `invoices.vat_note`.
  */
 
+import { PL_STANDARD_VAT_RATE } from "./billing.js";
 import type { VatComputation, VatRegime, ViesResult } from "../types.js";
 
 /** Polish VAT seller country — hard-coded; this service is for a PL JDG. */
@@ -130,7 +131,12 @@ export function computeVat(opts: ComputeVatOpts): VatComputation {
 
   // ── Branch 1: domestic PL → always 23%, no annotation ────
   if (buyerCountry === SELLER_COUNTRY) {
-    return buildResult({ regime: "pl_standard", rate: 23, price, note: null });
+    return buildResult({
+      regime: "pl_standard",
+      rate: PL_STANDARD_VAT_RATE,
+      price,
+      note: null,
+    });
   }
 
   const isEu = EU_COUNTRIES.has(buyerCountry);
@@ -160,7 +166,12 @@ export function computeVat(opts: ComputeVatOpts): VatComputation {
   // Per README: French companies without TVA intracommunautaire are
   // treated as consumers at 23% PL VAT. Same logic for any EU country.
   if (isEu) {
-    return buildResult({ regime: "pl_standard", rate: 23, price, note: null });
+    return buildResult({
+      regime: "pl_standard",
+      rate: PL_STANDARD_VAT_RATE,
+      price,
+      note: null,
+    });
   }
 
   // ── Branch 4: outside EU → export, 0% with annotation ────

@@ -89,11 +89,6 @@ const SELLER = {
   },
 } as const;
 
-// ── VAT constants ────────────────────────────────────────────
-const VAT = {
-  pl_standard_rate: 23, // %
-} as const;
-
 export const config = {
   env: env.NODE_ENV,
   isProd: env.NODE_ENV === "production",
@@ -129,7 +124,6 @@ export const config = {
   },
 
   seller: SELLER,
-  vat: VAT,
 } as const;
 
 export type Config = typeof config;

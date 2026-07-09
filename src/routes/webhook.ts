@@ -139,16 +139,16 @@ export const webhookRoute: FastifyPluginAsync = async (fastify) => {
       await audit("service_fetched", {
         code: service.code,
         brand: service.brand,
-        price_net_eur: service.price_net_eur,
+        price_gross_eur: service.price_gross_eur,
       });
 
       // Catalog price is the VAT-INCLUSIVE final price the customer pays
       // (same flat amount for every buyer). computeVat extracts net + VAT
       // out of it for standard-rate buyers; 0% regimes keep net === gross.
-      const price = Number(service.price_net_eur);
+      const price = Number(service.price_gross_eur);
       if (!Number.isFinite(price) || price < 0) {
         throw new Error(
-          `Catalog has invalid price_net_eur for ${service.code}: ${service.price_net_eur}`,
+          `Catalog has invalid price_gross_eur for ${service.code}: ${service.price_gross_eur}`,
         );
       }
 

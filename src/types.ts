@@ -71,10 +71,9 @@ export interface ServiceRecord {
   brand: Brand;
   billing_cycle: BillingCycle;
   // VAT-INCLUSIVE final price in EUR (the flat amount the customer pays).
-  // Despite the historical column name, this is the gross sticker price:
-  // computeVat extracts net + VAT out of it. Decimal comes back as a
-  // string; parse with care.
-  price_net_eur: string;
+  // computeVat extracts net + VAT out of it for standard-rate buyers.
+  // Decimal comes back as a string; parse with care.
+  price_gross_eur: string;
   name_pl: string | null;
   name_fr: string | null;
   name_it: string | null;

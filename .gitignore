@@ -21,6 +21,10 @@ pnpm-debug.log*
 /playwright-report/
 /test-results/
 
+# ── Dev preview output (npm run sample-invoice) ──────────────
+/sample-*.pdf
+/sample-*.html
+
 # ── OS / editor cruft ────────────────────────────────────────
 .DS_Store
 Thumbs.db

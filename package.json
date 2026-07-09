@@ -13,6 +13,7 @@
     "start": "node dist/server.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --import tsx --test \"test/**/*.test.ts\"",
+    "sample-invoice": "node --import tsx scripts/sample-invoice.ts",
     "migrate": "node --import tsx scripts/migrate.ts"
   },
   "dependencies": {

@@ -102,6 +102,30 @@ export async function uploadInvoicePdf(
   };
 }
 
+/**
+ * Download a previously-uploaded invoice PDF from Directus Files by id.
+ * Used by the resend route to re-attach the exact same document that was
+ * originally issued (rather than regenerating it).
+ *
+ * Directus serves raw file bytes at `/assets/{id}`; we authenticate with
+ * the static token. Returns the PDF as bytes.
+ */
+export async function downloadInvoicePdf(fileId: string): Promise<Uint8Array> {
+  const base = config.directus.url.replace(/\/+$/, "");
+  const res = await fetch(`${base}/assets/${encodeURIComponent(fileId)}`, {
+    headers: { Authorization: `Bearer ${config.directus.token}` },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(
+      `Directus file download failed for ${fileId}: HTTP ${res.status} — ${text.slice(0, 300)}`,
+    );
+  }
+
+  return new Uint8Array(await res.arrayBuffer());
+}
+
 function normaliseSize(v: number | string | null | undefined): number | null {
   if (typeof v === "number" && Number.isFinite(v)) return v;
   if (typeof v === "string") {

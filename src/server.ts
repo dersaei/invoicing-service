@@ -16,9 +16,11 @@
 import Fastify from "fastify";
 import { config } from "./config.js";
 import { closeDb } from "./db.js";
+import { addRawBodyParser } from "./lib/hmac.js";
 import { closeMailer, verifyMailer } from "./lib/mail.js";
 import { closePdfBrowser } from "./lib/pdf.js";
 import { healthRoute } from "./routes/health.js";
+import { resendRoute } from "./routes/resend.js";
 import { webhookRoute } from "./routes/webhook.js";
 
 const SHUTDOWN_TIMEOUT_MS = 8_000;
@@ -30,8 +32,14 @@ async function buildServer() {
     bodyLimit: 256 * 1024,
   });
 
+  // Raw-body-preserving JSON parser, registered once at the root so both
+  // signed POST routes (webhook, resend) can verify HMAC over the exact
+  // bytes. Must be installed before the routes that rely on `req.rawBody`.
+  addRawBodyParser(fastify);
+
   await fastify.register(healthRoute);
   await fastify.register(webhookRoute);
+  await fastify.register(resendRoute);
 
   return fastify;
 }

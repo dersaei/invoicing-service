@@ -31,10 +31,16 @@
  *   500           — unexpected infrastructure failure (caller may retry — idempotency protects)
  */
 
-import { createHmac, timingSafeEqual } from "node:crypto";
-import type { FastifyPluginAsync, FastifyRequest } from "fastify";
+import type { FastifyPluginAsync } from "fastify";
 import { config } from "../config.js";
 import { sql } from "../db.js";
+import { PAYMENT_TERM_DAYS } from "../lib/billing.js";
+import { formatErrorMessage } from "../lib/errors.js";
+import {
+  SIGNATURE_HEADER,
+  verifyHmac,
+  type RequestWithRaw,
+} from "../lib/hmac.js";
 import { getT } from "../lib/i18n.js";
 import {
   fetchService,
@@ -51,40 +57,7 @@ import { renderInvoiceEmail } from "../templates/email.html.js";
 import { renderInvoiceHtml } from "../templates/invoice.html.js";
 import { WebhookPayloadSchema } from "../types.js";
 
-/**
- * Payment term in days. Per project plan: 30-day terms across all
- * subscriptions. Constant lives here (not in config) because it's a
- * business rule that should require a code review to change, not a
- * Doppler tweak.
- */
-const PAYMENT_TERM_DAYS = 30;
-
-/** Header name carrying the HMAC-SHA256 hex digest of the raw body. */
-const SIGNATURE_HEADER = "x-invoicing-signature";
-
-interface RequestWithRaw extends FastifyRequest {
-  rawBody: Buffer;
-}
-
 export const webhookRoute: FastifyPluginAsync = async (fastify) => {
-  // ── Raw-body-preserving JSON parser ────────────────────────
-  // HMAC must be computed over the bytes that Directus signed, not over
-  // a re-serialised JSON (whose whitespace/key-order could differ).
-  // We override the default parser to keep both: a Buffer for HMAC,
-  // and the parsed object for Zod.
-  fastify.addContentTypeParser(
-    "application/json",
-    { parseAs: "buffer" },
-    (req, body, done) => {
-      (req as RequestWithRaw).rawBody = body as Buffer;
-      try {
-        done(null, JSON.parse((body as Buffer).toString("utf8")));
-      } catch (err) {
-        done(err as Error, undefined);
-      }
-    },
-  );
-
   fastify.post("/webhook/invoice", async (request, reply) => {
     const req = request as RequestWithRaw;
 
@@ -385,55 +358,3 @@ export const webhookRoute: FastifyPluginAsync = async (fastify) => {
     }
   });
 };
-
-/**
- * Extract a human-readable message from any thrown value:
- *  - Error instance      → .message
- *  - Directus SDK error  → .errors[0].message  (plain object, not Error)
- *  - anything else       → JSON.stringify (falls back to String())
- *
- * Without this, Directus SDK rejections (plain objects, not Error
- * instances) stringify to "[object Object]" in logs and 500 responses.
- */
-function formatErrorMessage(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  if (
-    err !== null &&
-    typeof err === "object" &&
-    "errors" in err &&
-    Array.isArray((err as { errors: unknown }).errors)
-  ) {
-    const errors = (err as { errors: Array<{ message?: string }> }).errors;
-    if (errors.length > 0 && typeof errors[0]?.message === "string") {
-      return errors[0].message;
-    }
-  }
-  try {
-    const json = JSON.stringify(err);
-    // JSON.stringify(undefined) === undefined, and a bare "{}" tells us
-    // nothing — fall back to String() so we never emit a useless message.
-    if (json && json !== "{}") return json;
-  } catch {
-    /* circular ref or BigInt — fall through to String() */
-  }
-  return String(err);
-}
-
-/**
- * Constant-time HMAC verification. `timingSafeEqual` requires equal-
- * length buffers, so we length-check first to avoid throwing on
- * mismatched-length attacker input.
- */
-function verifyHmac(
-  rawBody: Buffer,
-  signature: string,
-  secret: string,
-): boolean {
-  const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
-  if (expected.length !== signature.length) return false;
-  try {
-    return timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
-  } catch {
-    return false;
-  }
-}

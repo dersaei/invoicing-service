@@ -34,6 +34,7 @@
     "bank": "Banca",
     "iban": "IBAN",
     "bic": "SWIFT/BIC",
+    "reference": "Causale del pagamento",
     "term_days": "{{days}} giorni dalla data di emissione"
   },
   "vat_notes": {

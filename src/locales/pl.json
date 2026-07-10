@@ -34,6 +34,7 @@
     "bank": "Bank",
     "iban": "IBAN",
     "bic": "SWIFT",
+    "reference": "Tytuł przelewu",
     "term_days": "{{days}} dni od daty wystawienia"
   },
   "vat_notes": {

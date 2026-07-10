@@ -34,6 +34,7 @@
     "bank": "Bank",
     "iban": "IBAN",
     "bic": "SWIFT/BIC",
+    "reference": "Payment reference",
     "term_days": "{{days}} days from the issue date"
   },
   "vat_notes": {

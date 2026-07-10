@@ -187,6 +187,7 @@ ${vatNoteBlock}
     <dt>${esc(t("payment.bank"))}</dt><dd>${esc(seller.bank.name)}</dd>
     <dt>${esc(t("payment.iban"))}</dt><dd>${esc(seller.bank.iban_eur)}</dd>
     <dt>${esc(t("payment.bic"))}</dt><dd>${esc(seller.bank.bic)}</dd>
+    <dt>${esc(t("payment.reference"))}</dt><dd>${esc(data.number)}</dd>
     <dt>${esc(t("invoice.due_date"))}</dt>
     <dd>${esc(formatDate(data.dueDate, lang))} — ${esc(t("payment.term_days", { days: data.paymentTermDays }))}</dd>
   </dl>

@@ -3,12 +3,24 @@ import {
   readItems,
   rest,
   staticToken,
+  updateItem,
 } from "@directus/sdk";
 import { config } from "../config.js";
 import type { ServiceRecord } from "../types.js";
 
+// Minimal shape of the Directus `form_submissions` collection — only the
+// fields the invoicing-service writes back. Directus owns the full schema.
+interface FormSubmissionRecord {
+  id: string;
+  status: string;
+  issued_invoice_number: string | null;
+  issued_invoice_id: string | null;
+  last_error: string | null;
+}
+
 interface DirectusSchema {
   services: ServiceRecord[];
+  form_submissions: FormSubmissionRecord[];
 }
 
 const client = createDirectus<DirectusSchema>(config.directus.url)
@@ -36,6 +48,36 @@ export async function fetchService(code: string): Promise<ServiceRecord> {
   const svc = rows[0]!;
   if (!svc.active) throw new ServiceInactiveError(code);
   return svc;
+}
+
+/**
+ * Mark a Directus `form_submissions` row as issued, via the REST API.
+ *
+ * This MUST go through the Directus API (not a raw DB write, and not a
+ * flow's internal `item-update` operation): only an API-level
+ * `items.update` emits the event that fires the "Grant premium trial on
+ * invoice issued" flow. A direct DB write or an in-flow item-update is
+ * invisible to event-triggered flows.
+ *
+ * `submissionId` is the payload's `submission_id`, which the issuing flow
+ * sets to the form_submissions record id ($trigger.key).
+ */
+export async function markSubmissionIssued(
+  submissionId: string,
+  fields: {
+    invoiceNumber: string;
+    invoiceId: string;
+    warning: string | null;
+  },
+): Promise<void> {
+  await client.request(
+    updateItem("form_submissions", submissionId, {
+      status: "issued",
+      issued_invoice_number: fields.invoiceNumber,
+      issued_invoice_id: fields.invoiceId,
+      last_error: fields.warning,
+    }),
+  );
 }
 
 export interface UploadedFile {

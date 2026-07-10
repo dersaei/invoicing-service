@@ -44,6 +44,7 @@ import {
 import { getT } from "../lib/i18n.js";
 import {
   fetchService,
+  markSubmissionIssued,
   ServiceInactiveError,
   ServiceNotFoundError,
   uploadInvoicePdf,
@@ -302,6 +303,33 @@ export const webhookRoute: FastifyPluginAsync = async (fastify) => {
         log.error({ err: mailErr }, "email send failed");
         await audit("email_failed", { error: emailWarning }, invoiceId);
         await sql`UPDATE invoices SET status = 'failed' WHERE id = ${invoiceId}`;
+      }
+
+      // ── 15. Mark the submission issued via the Directus API ──
+      // Deliberately a REST call, NOT a raw DB write: only an API-level
+      // items.update emits the event that triggers the "Grant premium
+      // trial on invoice issued" flow. Runs even on the "partial" (email
+      // failed) path — the invoice is issued, so the trial is due.
+      // Best-effort: the invoice is already persisted + (attempted) sent,
+      // so a failure here must not fail the request. Audit loudly so a
+      // missed trial can be reconciled by hand.
+      try {
+        await markSubmissionIssued(payload.submission_id, {
+          invoiceNumber: invoiceNumber.number,
+          invoiceId,
+          warning: emailWarning,
+        });
+        await audit("submission_marked_issued", null, invoiceId);
+      } catch (updErr) {
+        log.error(
+          { err: updErr },
+          "failed to mark submission issued in Directus",
+        );
+        await audit(
+          "submission_update_failed",
+          { error: formatErrorMessage(updErr) },
+          invoiceId,
+        );
       }
 
       log.info(
